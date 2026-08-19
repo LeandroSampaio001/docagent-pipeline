@@ -1,11 +1,12 @@
 from fastapi import FastAPI
+from database import engine
+import models
 
-app = FastAPI(
-    title="DocAgent Pipeline",
-    description="API REST para pipeline de ingestão e análise de documentos",
-    version="1.0.0"
-)
+# Cria as tabelas no banco de dados automaticamente ao iniciar
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="DocAgent Pipeline")
 
 @app.get("/")
-def read_root():
-    return {"message": "Bem-vindo ao DocAgent Pipeline!"}
+def home():
+    return {"message": "API rodando e conectada ao PostgreSQL com sucesso!"}
