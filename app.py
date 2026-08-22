@@ -57,11 +57,11 @@ st.markdown("""
         border: 1px solid #EF4444;
     }
 </style>
-""", unsafe_style=True)
+""", unsafe_allow_html=True)
 
 # Título Principal da Aplicação
-st.markdown("<div class='main-title'>🤖 DocAgent Pipeline</div>", unsafe_style=True)
-st.markdown("<div class='sub-title'>Plataforma Inteligente de Classificação, Análise e Extração de Dados em Documentos com IA Gemini</div>", unsafe_style=True)
+st.markdown("<div class='main-title'>🤖 DocAgent Pipeline</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub-title'>Plataforma Inteligente de Classificação, Análise e Extração de Dados em Documentos com IA Gemini</div>", unsafe_allow_html=True)
 
 # Verificação de Conexão com a API
 api_online = False
@@ -99,8 +99,7 @@ with st.sidebar:
 if not api_online:
     st.warning("⚠️ O backend (FastAPI) não parece estar respondendo. Por favor, verifique se os containers estão rodando com `docker-compose up`.")
 
-# Puxar todos os documentos do banco de dados
-@st.fragment
+# Puxar todos os documentos do banco de dados (função padrão sem o fragment)
 def get_documentos():
     try:
         res = requests.get(f"{BACKEND_URL}/documentos")
@@ -210,7 +209,7 @@ with tab_pipeline:
                 
                 # Exibição de Status customizado com HTML
                 st_class = f"status-{doc_sel['status'].lower()}"
-                st.markdown(f"**Status atual:** <span class='status-badge {st_class}'>{doc_sel['status'].upper()}</span>", unsafe_style=True)
+                st.markdown(f"**Status atual:** <span class='status-badge {st_class}'>{doc_sel['status'].upper()}</span>", unsafe_allow_html=True)
                 st.write("")
                 
                 # Ações
