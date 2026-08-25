@@ -16,52 +16,56 @@ st.set_page_config(
 # Configuração do Backend URL
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
-# Estilo Personalizado CSS
+# Estilo Personalizado CSS para Tags Compactas
 st.markdown("""
 <style>
     .main-title {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         font-weight: 800;
         color: #1E3A8A;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.1rem;
     }
     .sub-title {
-        font-size: 1.1rem;
+        font-size: 1rem;
         color: #4B5563;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }
-    .status-badge {
-        padding: 4px 10px;
-        border-radius: 12px;
+    .tag-badge {
+        display: inline-block;
+        background-color: #E2E8F0;
+        color: #1E293B;
+        padding: 3px 8px;
+        border-radius: 6px;
         font-size: 0.85rem;
-        font-weight: bold;
+        font-weight: 500;
+        margin: 2px;
     }
-    .status-pendente {
+    .tag-valor {
+        display: inline-block;
+        background-color: #DCFCE7;
+        color: #166534;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin: 2px;
+    }
+    .tag-data {
+        display: inline-block;
         background-color: #FEF3C7;
-        color: #D97706;
-        border: 1px solid #F59E0B;
-    }
-    .status-processando {
-        background-color: #DBEAFE;
-        color: #2563EB;
-        border: 1px solid #3B82F6;
-    }
-    .status-concluido {
-        background-color: #D1FAE5;
-        color: #059669;
-        border: 1px solid #10B981;
-    }
-    .status-erro {
-        background-color: #FEE2E2;
-        color: #DC2626;
-        border: 1px solid #EF4444;
+        color: #92400E;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin: 2px;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Título Principal da Aplicação
+# Título Principal
 st.markdown("<div class='main-title'>🤖 DocAgent Pipeline</div>", unsafe_allow_html=True)
-st.markdown("<div class='sub-title'>Plataforma Inteligente de Classificação, Análise e Extração de Dados em Documentos com IA Gemini</div>", unsafe_allow_html=True)
+st.markdown("<div class='sub-title'>Central Inteligente de Leitura, Classificação e Análise de Documentos com Inteligência Artificial</div>", unsafe_allow_html=True)
 
 # Verificação de Conexão com a API
 api_online = False
@@ -74,32 +78,24 @@ except Exception:
 
 # Sidebar
 with st.sidebar:
-    st.markdown("### 🔌 Conexão da API")
+    st.markdown("### 🔌 Conexão do Sistema")
     if api_online:
-        st.success("API: Conectada")
+        st.success("Status: Sistema Online 🟢")
     else:
-        st.error("API: Desconectada")
-        st.info(f"Tentando conectar em: {BACKEND_URL}")
+        st.error("Status: Desconectado 🔴")
         
     st.markdown("---")
-    st.markdown("### ℹ️ Sobre o Portfólio")
+    st.markdown("### 💡 Como Usar?")
     st.markdown("""
-    Este sistema representa um pipeline moderno de processamento de documentos não estruturados.
-    
-    **Tecnologias Utilizadas:**
-    - **FastAPI** (Backend RESTful)
-    - **SQLAlchemy** & **PostgreSQL**
-    - **Google Gemini 1.5 Flash API**
-    - **Streamlit** (Frontend Reativo)
-    - **Docker & Docker Compose**
+    1. **Enviar:** Suba seu PDF ou texto na aba 1.
+    2. **Processar:** Peça para a IA analisar na aba 2.
+    3. **Insights:** Veja o painel executivo e gráficos na aba 3!
     """)
-    st.caption("Desenvolvido para Portfólio de Engenharia de Software Sênior.")
+    st.caption("Portfólio de Engenharia de Software Sênior.")
 
-# Se a API estiver offline, exibe aviso e interrompe fluxo de dados do backend, mas mantém a UI viva
 if not api_online:
-    st.warning("⚠️ O backend (FastAPI) não parece estar respondendo. Por favor, verifique se os containers estão rodando com `docker-compose up`.")
+    st.warning("⚠️ O backend não está respondendo. Verifique os containers.")
 
-# Puxar todos os documentos do banco de dados (função padrão sem o fragment)
 def get_documentos():
     try:
         res = requests.get(f"{BACKEND_URL}/documentos")
@@ -113,212 +109,235 @@ documentos = get_documentos() if api_online else []
 
 # Criação das Abas da Aplicação
 tab_add, tab_pipeline, tab_dashboard = st.tabs([
-    "📥 Ingestão de Documento", 
-    "⚙️ Pipeline & Processamento", 
-    "📊 Dashboard & Metadados"
+    "📥 1. Enviar Documento", 
+    "⚙️ 2. Processar com IA", 
+    "📊 3. Dashboard Executivo & Gráficos"
 ])
 
-# ABA 1: INGESTÃO DE NOVO DOCUMENTO
+# ABA 1: INGESTÃO
 with tab_add:
-    st.subheader("Fazer Upload ou Cadastrar Novo Documento")
+    st.subheader("Envio de Novos Documentos para Análise")
+    st.info("💡 Envie arquivos em **PDF, TXT ou MD**. A IA fará a extração do texto automaticamente.")
     
-    col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        st.markdown("##### Digitar ou Colar Texto")
-        novo_titulo = st.text_input("Título do Documento", placeholder="Ex: Contrato de Prestação de Serviços - TI")
-        novo_conteudo = st.text_area("Conteúdo Textual", placeholder="Cole o texto ou cláusulas do documento aqui...", height=250)
-        
-    with col2:
-        st.markdown("##### Enviar Arquivo")
-        arquivo_enviado = st.file_uploader("Selecione um arquivo de texto (.txt ou .md)", type=["txt", "md"])
-        if arquivo_enviado is not None:
-            # Substitui os valores se um arquivo for carregado
-            texto_arquivo = arquivo_enviado.read().decode("utf-8")
-            novo_titulo = arquivo_enviado.name.rsplit('.', 1)[0].replace("_", " ").title()
-            novo_conteudo = texto_arquivo
-            st.success(f"Arquivo '{arquivo_enviado.name}' carregado com sucesso!")
-            st.text_area("Conteúdo do arquivo (prévia):", value=texto_arquivo[:500] + ("..." if len(texto_arquivo) > 500 else ""), height=120, disabled=True)
+    if "input_titulo" not in st.session_state:
+        st.session_state.input_titulo = ""
+    if "input_conteudo" not in st.session_state:
+        st.session_state.input_conteudo = ""
 
-    # Botão de Envio
-    if st.button("Enviar para Ingestão", type="primary"):
+    col1, col2 = st.columns([1, 1], gap="medium")
+    
+    with col2:
+        st.markdown("##### 📁 Selecionar Arquivo")
+        arquivo_enviado = st.file_uploader("Escolha o documento PDF ou texto", type=["txt", "md", "pdf"])
+        
+        if arquivo_enviado is not None:
+            texto_extraido = ""
+            try:
+                if arquivo_enviado.name.endswith('.pdf'):
+                    import pypdf
+                    reader = pypdf.PdfReader(arquivo_enviado)
+                    for page in reader.pages:
+                        extracted = page.extract_text()
+                        if extracted:
+                            texto_extraido += extracted + "\n"
+                else:
+                    texto_extraido = arquivo_enviado.read().decode("utf-8")
+                
+                if texto_extraido:
+                    st.session_state.input_titulo = arquivo_enviado.name.rsplit('.', 1)[0].replace("_", " ").title()
+                    st.session_state.input_conteudo = texto_extraido
+                    st.success(f"✅ Arquivo '{arquivo_enviado.name}' lido com sucesso!")
+            except Exception as e:
+                st.error(f"Erro ao processar arquivo: {str(e)}")
+
+    with col1:
+        st.markdown("##### 📝 Detalhes do Documento")
+        novo_titulo = st.text_input("Título", value=st.session_state.input_titulo, placeholder="Ex: Relatório Master")
+        novo_conteudo = st.text_area("Conteúdo Extraído", value=st.session_state.input_conteudo, placeholder="O texto aparecerá aqui...", height=200)
+
+    if st.button("🚀 Enviar para Fila", type="primary"):
         if not api_online:
-            st.error("Não é possível enviar. O backend está offline.")
+            st.error("Sistema offline.")
         elif not novo_titulo or not novo_conteudo:
-            st.warning("Por favor, informe o Título e o Conteúdo do documento.")
+            st.warning("Preencha o título e o conteúdo.")
         else:
             try:
                 payload = {"titulo": novo_titulo, "conteudo": novo_conteudo}
                 response = requests.post(f"{BACKEND_URL}/documentos", json=payload)
                 if response.status_code == 201:
-                    st.success(f"Documento '{novo_titulo}' enviado ao pipeline com status 'Pendente'!")
+                    st.success("🎉 Documento enviado! Vá para a aba 'Processar com IA'.")
+                    st.session_state.input_titulo = ""
+                    st.session_state.input_conteudo = ""
                     st.rerun()
                 else:
-                    st.error(f"Falha ao salvar: {response.text}")
+                    st.error(f"Erro: {response.text}")
             except Exception as e:
-                st.error(f"Erro ao conectar com a API: {str(e)}")
+                st.error(f"Erro: {str(e)}")
 
-# ABA 2: PIPELINE & PROCESSAMENTO
+# ABA 2: PIPELINE
 with tab_pipeline:
-    st.subheader("Gerenciar Pipeline de IA")
+    st.subheader("Processamento por Inteligência Artificial")
     
     if not documentos:
-        st.info("Nenhum documento cadastrado no banco de dados. Vá para a aba 'Ingestão de Documento' para cadastrar.")
+        st.warning("Nenhum documento cadastrado.")
     else:
-        col_list, col_det = st.columns([2, 3])
+        col_list, col_det = st.columns([2, 3], gap="medium")
         
         with col_list:
-            st.markdown("##### Lista de Documentos")
-            
-            # Formatar dados para exibição na tabela simplificada
+            st.markdown("##### 📂 Lista de Documentos")
             dados_tabela = []
             for d in documentos:
-                status_emoji = "⏳"
-                if d['status'] == "Processando":
-                    status_emoji = "🔄"
-                elif d['status'] == "Concluído":
-                    status_emoji = "✅"
-                elif d['status'] == "Erro":
-                    status_emoji = "❌"
+                status_emoji = "⏳ Na Fila"
+                if d['status'] == "Processando": status_emoji = "🔄 Analisando"
+                elif d['status'] == "Concluído": status_emoji = "✅ Concluído"
+                elif d['status'] == "Erro": status_emoji = "❌ Erro"
                     
-                dados_tabela.append({
-                    "ID": d['id'],
-                    "Título": d['titulo'],
-                    "Status": f"{status_emoji} {d['status']}"
-                })
+                dados_tabela.append({"ID": d['id'], "Título": d['titulo'], "Status": status_emoji})
             
-            df_docs = pd.DataFrame(dados_tabela)
-            st.dataframe(df_docs, use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(dados_tabela), use_container_width=True, hide_index=True)
             
-            # Seletor de documento para detalhamento
             doc_ids = [d['id'] for d in documentos]
             doc_titulos = {d['id']: f"ID {d['id']} - {d['titulo']}" for d in documentos}
-            
-            selecionado_id = st.selectbox(
-                "Selecione um documento para detalhar ou processar:",
-                options=doc_ids,
-                format_func=lambda x: doc_titulos[x]
-            )
+            selecionado_id = st.selectbox("Selecione para processar:", options=doc_ids, format_func=lambda x: doc_titulos[x])
             
         with col_det:
-            # Recupera os dados completos do selecionado
             doc_sel = next((d for d in documentos if d['id'] == selecionado_id), None)
-            
             if doc_sel:
-                st.markdown(f"### Detalhes do Documento: {doc_sel['titulo']}")
+                st.markdown(f"### 🔍 {doc_sel['titulo']}")
+                st.write(f"**Status:** {doc_sel['status']}")
                 
-                # Exibição de Status customizado com HTML
-                st_class = f"status-{doc_sel['status'].lower()}"
-                st.markdown(f"**Status atual:** <span class='status-badge {st_class}'>{doc_sel['status'].upper()}</span>", unsafe_allow_html=True)
-                st.write("")
-                
-                # Ações
-                col_btn, col_msg = st.columns([1, 1.5])
-                with col_btn:
-                    pode_processar = doc_sel['status'] in ["Pendente", "Erro"]
-                    if st.button("🚀 Executar Pipeline de IA", disabled=not pode_processar, use_container_width=True, type="primary"):
-                        with st.spinner("Enviando para a API e processando com Gemini..."):
+                pode_processar = doc_sel['status'] in ["Pendente", "Erro"]
+                if pode_processar:
+                    if st.button("✨ Executar Análise com IA", type="primary", use_container_width=True):
+                        with st.spinner("A IA está interpretando o documento..."):
                             try:
                                 proc_res = requests.post(f"{BACKEND_URL}/documentos/{doc_sel['id']}/processar")
                                 if proc_res.status_code == 200:
-                                    st.success("Documento processado com sucesso!")
+                                    st.success("🎉 Análise concluída com sucesso!")
                                     st.rerun()
                                 else:
-                                    st.error(f"Erro no processamento: {proc_res.json().get('detail', 'Erro desconhecido')}")
+                                    st.error(f"Erro: {proc_res.json().get('detail', 'Erro')}")
                             except Exception as e:
-                                st.error(f"Erro ao chamar API: {str(e)}")
-                                
-                with col_msg:
-                    if not pode_processar:
-                        st.info("Este documento já foi processado ou está em andamento.")
-                    else:
-                        st.caption("Disparará a análise LLM estruturada no conteúdo textual.")
-                
-                st.markdown("---")
-                
-                # Abas internas de detalhes
-                tab_det_text, tab_det_extracted = st.tabs(["📄 Conteúdo Original", "🔍 Dados Extraídos pela IA"])
-                
-                with tab_det_text:
-                    st.text_area("Texto do Documento", value=doc_sel['conteudo'], height=200, disabled=True)
-                    
-                with tab_det_extracted:
-                    ext = doc_sel.get('extracao_dados')
-                    if not ext:
-                        st.warning("Nenhum dado extraído ainda. Execute o Pipeline de IA para analisar este documento.")
-                    else:
-                        st.markdown(f"**Método de Extração:** `{ext.get('metodo_extracao', 'Desconhecido')}`")
-                        
-                        col_ext1, col_ext2 = st.columns([1, 1])
-                        with col_ext1:
-                            st.write("**Tipo do Documento:**")
-                            st.info(ext.get('tipo_documento', 'Não classificado'))
-                            
-                            st.write("**Entidades Mencionadas:**")
-                            entidades = ext.get('entidades_mencionadas', [])
-                            if entidades:
-                                for ent in entidades:
-                                    st.markdown(f"- {ent}")
-                            else:
-                                st.caption("Nenhuma entidade detectada")
-                                
-                        with col_ext2:
-                            st.write("**Datas Identificadas:**")
-                            datas = ext.get('datas', [])
-                            if datas:
-                                for dat in datas:
-                                    st.markdown(f"- {dat}")
-                            else:
-                                st.caption("Nenhuma data detectada")
-                                
-                            st.write("**Valores Encontrados:**")
-                            valores = ext.get('valores', [])
-                            if valores:
-                                for val in valores:
-                                    st.markdown(f"- `{val}`")
-                            else:
-                                st.caption("Nenhum valor detectado")
-                                
-                        st.write("**Resumo Executivo da IA:**")
-                        st.success(ext.get('resumo', 'Sem resumo disponível.'))
-                        
-                        with st.expander("Ver Payload JSON Completo"):
-                            st.json(ext)
+                                st.error(f"Erro: {str(e)}")
+                else:
+                    st.success("✅ Documento já processado.")
 
-# ABA 3: DASHBOARD & METADADOS
+# ABA 3: DASHBOARD EXECUTIVO & GRÁFICOS EM PIZZA/ROSCA (PLOTLY)
 with tab_dashboard:
-    st.subheader("Visão Geral e Métricas do Pipeline")
+    st.subheader("📊 Dashboard Executivo & Gráficos Analíticos")
     
     if not documentos:
-        st.info("Aguardando dados para consolidar estatísticas.")
+        st.info("Aguardando documentos para gerar os gráficos.")
     else:
-        # Métricas de Alta Performance
         totais = len(documentos)
         concluidos = sum(1 for d in documentos if d['status'] == "Concluído")
         pendentes = sum(1 for d in documentos if d['status'] == "Pendente")
         erros = sum(1 for d in documentos if d['status'] == "Erro")
         
+        # Métricas no Topo
         m1, m2, m3, m4 = st.columns(4)
         m1.metric("Total de Documentos", totais)
-        m2.metric("Processados com Sucesso", concluidos, f"{concluidos/totais*100:.1f}%" if totais > 0 else "0%")
-        m3.metric("Fila de Espera (Pendente)", pendentes)
-        m4.metric("Falhas no Pipeline", erros)
+        m2.metric("Sucesso da IA", concluidos)
+        m3.metric("Pendentes", pendentes)
+        m4.metric("Erros", erros)
         
         st.markdown("---")
-        st.markdown("### Visão Geral de Dados Consolidados")
         
-        # Consolidação de uma tabela analítica com dados de extração
-        linhas_analise = []
-        for d in documentos:
-            ext = d.get('extracao_dados') or {}
-            linhas_analise.append({
-                "ID": d['id'],
-                "Título": d['titulo'],
-                "Status": d['status'],
-                "Tipo de Documento": ext.get('tipo_documento', 'N/A'),
-                "Resumo": ext.get('resumo', 'N/A'),
-                "Método de Extração": ext.get('metodo_extracao', 'N/A')
-            })
+        # Gráficos Profissionais em Pizza/Rosca com Plotly
+        try:
+            import plotly.express as px
             
-        df_analise = pd.DataFrame(linhas_analise)
-        st.dataframe(df_analise, use_container_width=True, hide_index=True)
+            col_g1, col_g2 = st.columns(2, gap="medium")
+            
+            with col_g1:
+                st.markdown("##### 🍩 Distribuição de Status do Pipeline")
+                df_status = pd.DataFrame({
+                    "Status": ["Concluído", "Pendente", "Erros"],
+                    "Quantidade": [concluidos, pendentes, erros]
+                })
+                fig_status = px.pie(df_status, names="Status", values="Quantidade", hole=0.4, 
+                                    color_discrete_sequence=["#10B981", "#F59E0B", "#EF4444"])
+                fig_status.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=260)
+                st.plotly_chart(fig_status, use_container_width=True)
+                
+            with col_g2:
+                st.markdown("##### 📊 Tipos de Documentos Identificados")
+                tipos_lista = []
+                for d in documentos:
+                    ext = d.get('extracao_dados')
+                    if isinstance(ext, dict):
+                        tipos_lista.append(ext.get('tipo_documento', 'Não classificado'))
+                    else:
+                        tipos_lista.append('Não Processado')
+                
+                df_tipos = pd.DataFrame(tipos_lista, columns=["Tipo"]).value_counts().reset_index(name="Total")
+                fig_tipos = px.bar(df_tipos, x="Tipo", y="Total", text="Total", 
+                                   color="Tipo", color_discrete_sequence=px.colors.qualitative.Prism)
+                fig_tipos.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=260, showlegend=False)
+                st.plotly_chart(fig_tipos, use_container_width=True)
+                
+        except ImportError:
+            st.warning("Biblioteca Plotly não encontrada.")
+
+        st.markdown("---")
+        st.markdown("### 📋 Resumo Inteligente por Documento")
+        
+        # Função auxiliar interna para limpar quebras de linha e espaços múltiplos das strings do JSON
+        def limpar_texto(texto):
+            if not texto:
+                return ""
+            # Substitui qualquer quebra de linha ou espaço excessivo por um espaço simples
+            return " ".join(str(texto).split())
+
+        # Cards Compactos e Organizados com Tratamento de Dados Blindado
+        for d in documentos:
+            ext = d.get('extracao_dados')
+            with st.container(border=True):
+                col_h1, col_h2 = st.columns([3, 1])
+                with col_h1:
+                    st.markdown(f"#### 📄 {d['titulo']}")
+                with col_h2:
+                    st.markdown(f"**Status:** `{d['status']}`")
+                
+                if isinstance(ext, dict):
+                    st.markdown("---")
+                    
+                    col_meta1, col_meta2, col_meta3 = st.columns(3, gap="medium")
+                    
+                    with col_meta1:
+                        st.markdown(f"**🏷️ Classificação:**\n`{ext.get('tipo_documento', 'N/A')}`")
+                        entidades = ext.get('entidades_mencionadas', [])
+                        if isinstance(entidades, list) and entidades:
+                            ent_limpas = [limpar_texto(e) for e in entidades if limpar_texto(e)]
+                            ent_str = ", ".join(ent_limpas) if ent_limpas else "Nenhuma"
+                        else:
+                            ent_str = "Nenhuma"
+                        st.markdown(f"**🏢 Entidades:**\n{ent_str}")
+                            
+                    with col_meta2:
+                        datas = ext.get('datas', [])
+                        if isinstance(datas, list) and datas:
+                            # Junta as datas limpando as quebras de linha internas e separando por pipe (|)
+                            datas_limpas = [limpar_texto(dt) for dt in datas if limpar_texto(dt)]
+                            datas_str = " | ".join(datas_limpas) if datas_limpas else "Nenhuma"
+                        else:
+                            datas_str = "Nenhuma"
+                        st.markdown(f"**📅 Datas:**\n{datas_str}")
+                            
+                    with col_meta3:
+                        valores = ext.get('valores', [])
+                        if isinstance(valores, list) and valores:
+                            # Junta os valores limpando as quebras de linha internas (ex: R$ 35.00)
+                            val_limpos = [limpar_texto(v) for v in valores if limpar_texto(v)]
+                            val_str = ", ".join(val_limpos) if val_limpos else "Nenhum"
+                        else:
+                            val_str = "Nenhum"
+                        st.markdown(f"**💰 Valores:**\n{val_str}")
+                    
+                    st.markdown("---")
+                    st.markdown("**📌 Resumo Executivo da IA:**")
+                    resumo_bruto = ext.get('resumo', 'Sem resumo disponível.')
+                    resumo_limpo = limpar_texto(resumo_bruto)
+                    st.info(resumo_limpo)
+                else:
+                    st.warning("⏳ Este documento ainda aguarda o processamento da inteligência artificial.")
